@@ -60,6 +60,6 @@ void loop() {
   sq_ += 1;
   for(int i=0; i<SEND_DATA_PINS_NUM; i++){
     int val = analogRead(SEND_DATA_ANALOG_PINS[i]);    
-    send(sq_, SEND_DATA_PINS_NUM, i+1, i+1, (uint32_t) i);
+    send(sq_, SEND_DATA_PINS_NUM, i+1, i+1, (uint32_t) val);
   }
 }

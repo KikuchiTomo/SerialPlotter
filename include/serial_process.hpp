@@ -4,8 +4,8 @@
 #include "config.hpp"
 #include "logger.hpp"
 #include "packet_codable.hpp"
-#include "serial.hpp"
 #include "packet_definition.hpp"
+#include "serial.hpp"
 #include "serial_config.hpp"
 #include <thread>
 
@@ -18,10 +18,13 @@ class SerialProcess {
     bool is_threading_ = true;
     Codable::COBSCoder *coder_ = NULL;
     std::thread th_;
+    FILE *fp_ = NULL;
+    bool recording_ = false;
+    bool prev_recording_ = false;
     int index_ = 0;
     int id_;
 
-   public:
+  public:
     SerialProcess(int id) : th_{[this] { __serialRoutine(); }} {
         id_ = id;
         tmp_ = (unsigned char *)malloc(sizeof(unsigned char) * 1024);
@@ -52,6 +55,18 @@ class SerialProcess {
         dev_->setTimeout(sec, usec);
     }
 
+    void setRecord(const char *fpath) {
+        fp_ = fopen(fpath, "a+");
+        if (fp_ == NULL) {
+            SError("Couldn't open file : %s", fpath);
+            return;
+        }
+
+        recording_ = true;
+    }
+
+    void unsetRecord() { recording_ = false; }
+
     void run() {
         is_threading_ = true;
 
@@ -64,56 +79,75 @@ class SerialProcess {
   private:
     void __loop() {
         int i;
-        int tmp_index = 0;       
+        int tmp_index = 0;
 
         int len = dev_->getRecvSize();
-        if(len <= sizeof(Definition::BasePacket)){
+        if (len <= sizeof(Definition::BasePacket)) {
             return;
         }
-      
-        //SNotice("recieved %d", len);
+
+        // SNotice("recieved %d", len);
 
         for (i = 0; i < len; i++) {
             bool fail = false;
             unsigned char byte = dev_->popRecvData(&fail);
-            if (fail){
+            if (fail) {
                 SError("pop failed");
                 continue;
             }
 
-            //printf(" %02X", byte);
+            // printf(" %02X", byte);
             buf_[index_++] = byte;
 
-            if (byte == 0x00) {               
+            if (byte == 0x00) {
                 tmp_index = index_;
-                //printf("\n");
+                // printf("\n");
                 index_ = 0;
                 break;
-            }            
+            }
         }
 
         if (index_ == 0) {
-            Serial::Codable::Packet packed = {buf_, (unsigned char) tmp_index};       
+            Serial::Codable::Packet packed = {buf_, (unsigned char)tmp_index};
             coder_->decode(&packed);
 
             Definition::Packet data;
             for (i = 0; i < sizeof(Definition::BasePacket); i++) {
-                data.bin[i] = packed.body[i];                
+                data.bin[i] = packed.body[i];
             }
 
             data.decodePacket();
 
-            SNotice("* %u %u %lu %lu %lu %lu %lu %ld", data.packet.dst, data.packet.src, data.packet.seq, data.packet.pag, data.packet.pos, data.packet.tm, data.packet.ch, data.packet.val);
+            // SNotice("* %u %u %lu %lu %lu %lu %lu %ld", data.packet.dst,
+            // data.packet.src, data.packet.seq, data.packet.pag,
+            // data.packet.pos, data.packet.tm, data.packet.ch,
+            // data.packet.val);
+            if (recording_) {
+                if(fp_ != NULL){
+                    fprintf(fp_, "%u %u %u %u %u %u\n",
+                            data.packet.seq, data.packet.pag, data.packet.pos, data.packet.tm,
+                            data.packet.ch, data.packet.val);
+                }
+            }
+
+            // on stop recording
+            if ((prev_recording_ != recording_) && recording_ == false) {
+                fclose(fp_);
+                fp_ = NULL;
+            }
+
+            prev_recording_ = recording_;
+
         } else {
             SError("expected %d bytes, but size of packed.length is %d",
-                  sizeof(Definition::BasePacket), tmp_index);
+                   sizeof(Definition::BasePacket), tmp_index);
         }
     }
 
   public:
     void __serialRoutine() {
         SInfo("Serial Process Start....");
-        while (is_threading_) {          
+        while (is_threading_) {
             dev_->recv();
             dev_->send();
             __loop();

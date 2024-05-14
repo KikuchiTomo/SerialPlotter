@@ -99,6 +99,8 @@ private:
   void setupRecordingView(){
     record_button_ = Gtk::Button("Record/Stop");  
     record_button_.set_border_width(5);
+    record_button_.signal_clicked().connect(
+      sigc::mem_fun(*this, &PortSelection::viewDidRecordClicked));  
     // Time code label    
     time_label_.set_text("00:00:00.00");  
     auto time_context = time_label_.get_pango_context();  
@@ -133,6 +135,7 @@ private:
           stoi(std::string(select_rate_.get_active_text())));
   }
 
+  void viewDidRecordClicked() { presenter_->viewDidClickRecordButton(); }
   PortSelectionPresenter* presenter_;
 
   Gtk::ScrolledWindow scroll_view_;

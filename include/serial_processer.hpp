@@ -118,6 +118,26 @@ class SerialProcesser {
         }
     }
 
+    void startRecording(){
+        time_t t;
+        char fname[64];
+
+
+        t = time(NULL);
+        strftime(fname, sizeof(fname), "data-%y%m%d-%H%M%S.csv", localtime(&t));
+        for (Serial::SerialProcess *connection : processes_) {
+            char fpath[64];
+            sprintf(fpath, "outputs/%d-%s", connection->connectionId(), fname);
+            connection->setRecord(fpath);
+        }
+    }
+
+    void endRecording(){
+        for (Serial::SerialProcess *connection : processes_) {
+            connection->unsetRecord();
+        }
+    }
+
     void discardConnection(int id) {
         // TODO: リファクタ
         bool is_contain = false;

@@ -17,22 +17,20 @@ class PortSelectionPresenter : public SerialProcesserDelegate {
     Gtk::TreeModel::ColumnRecord record_;
     Glib::RefPtr<Gtk::ListStore> liststore_;
 
-    // PortSelection *view;
+    bool isRecording = false;
 
+    // PortSelection *view;
     PortSelectionPresenter() {
         SerialProcesser::shared().delegate = this;
-
         record_.add(col_num_);
         record_.add(col_name_);
         record_.add(col_baud_rate_);
         record_.add(col_state_);
-
         liststore_ = Gtk::ListStore::create(record_);        
     }
 
     void setTreeModel(Gtk::TreeView *treeview) {
         treeview->set_model(liststore_);
-
         // ビューに表示する列を指定
         treeview->append_column("State", col_state_);
         treeview->append_column("ID", col_num_);
@@ -43,7 +41,7 @@ class PortSelectionPresenter : public SerialProcesserDelegate {
     ~PortSelectionPresenter() { SerialProcesser::shared().delegate = NULL; }
 
     void viewDidClickOpenButton(const char *port_name, int baud_rate) {
-        SLog("clicked");
+        SLog("clicked openButton");
 
         bool connection =
             SerialProcesser::shared().createConnection(port_name, baud_rate);
@@ -57,7 +55,16 @@ class PortSelectionPresenter : public SerialProcesserDelegate {
         }
     }
 
-    void viewDidClickRecordButton() {}
+    void viewDidClickRecordButton() {
+        SLog("clicked recordButton");
+
+        if(isRecording == false){
+            isRecording = true;
+            SerialProcesser::shared().startRecording();
+        }else{
+            SerialProcesser::shared().endRecording();
+        }
+    }
 
     void serialProcesserConnected(int id) override {
         // view->updateStateView("Connected");

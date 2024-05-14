@@ -31,6 +31,7 @@ install-ubuntu:
 
 remake: cleaner all
 run:
+	-mkdir outputs
 	#open ./$(TARGETDIR)/$(TARGET) 
 	./$(TARGETDIR)/$(TARGET) 
 
@@ -44,7 +45,7 @@ clean:
 
 cleaner: clean
 	@$(RM) -rf $(TARGETDIR)
-
+	
 -include $(dependencies)
 
 $(TARGETDIR)/$(TARGET): $(objects)
