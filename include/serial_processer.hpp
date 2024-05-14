@@ -58,8 +58,19 @@ class SerialProcesser {
         directory_iterator iter(directory), end;
         std::error_code err;
 
+    //  TODO: 適当すぎるので後で直す
+        std::string needs_0 = "cu";
+        std::string needs_1 = "usb";
         for (; iter != end && !err; iter.increment(err)) {
             const directory_entry entry = *iter;
+            std::string path = entry.path().string();
+            bool found_0 = path.find(needs_0) != std::string::npos;
+            bool found_1 = path.find(needs_1) != std::string::npos;
+
+            if(!found_0 && !found_1) {
+                continue;
+            }
+            
             ports.push_back(entry.path().string());
         }
 

@@ -67,7 +67,7 @@ class SerialProcess {
         int tmp_index = 0;       
 
         int len = dev_->getRecvSize();
-        if(len <= sizeof(Definition::Packet)){
+        if(len <= sizeof(Definition::BasePacket)){
             return;
         }
       
@@ -81,30 +81,32 @@ class SerialProcess {
                 continue;
             }
 
+            //printf(" %02X", byte);
             buf_[index_++] = byte;
-                    
-            if (byte == 0x00 && index_ >= 27) {               
-                tmp_index = index_;                 
+
+            if (byte == 0x00) {               
+                tmp_index = index_;
+                //printf("\n");
                 index_ = 0;
                 break;
             }            
         }
 
-        //STrace("packed %d", tmp_index);      
-        Serial::Codable::Packet packed = {buf_, (unsigned char) tmp_index};
-       
-        coder_->decode(&packed);
+        if (index_ == 0) {
+            Serial::Codable::Packet packed = {buf_, (unsigned char) tmp_index};       
+            coder_->decode(&packed);
 
-        if (packed.length == 27) {
             Definition::Packet data;
-            for (i = 0; i < sizeof(Definition::Packet); i++) {
-                data.bin[i] = packed.body[i];
+            for (i = 0; i < sizeof(Definition::BasePacket); i++) {
+                data.bin[i] = packed.body[i];                
             }
-            SNotice("* %lu %lu %lu : %lu %ld %ld", data.seq, data.pag, data.pos,
-                    data.tm, data.ch, data.val);
+
+            data.decodePacket();
+
+            SNotice("* %u %u %lu %lu %lu %lu %lu %ld", data.packet.dst, data.packet.src, data.packet.seq, data.packet.pag, data.packet.pos, data.packet.tm, data.packet.ch, data.packet.val);
         } else {
             SError("expected %d bytes, but size of packed.length is %d",
-                  sizeof(Definition::Packet), packed.length);
+                  sizeof(Definition::BasePacket), tmp_index);
         }
     }
 
