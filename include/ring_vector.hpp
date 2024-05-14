@@ -47,11 +47,7 @@ template <class T> class RingVector {
     long long int getDataLength() { return l_; }
 
     void push(T data, bool *fail = NULL) {
-        // if (!m_.try_lock()) {
-        //     __fail(fail, true);
-        //     return;
-        // }
-
+  
         __fail(fail, true);
         if (s_ > 0 && l_ < s_) {
             h_ = (s_ + h_ - 1) % s_;
@@ -60,15 +56,10 @@ template <class T> class RingVector {
             __fail(fail, false);
         }
 
-        // m_.unlock();
     }
 
     void push(T *data, int count, bool *fail = NULL) {
-        // if (!m_.try_lock()) {
-        //     __fail(fail, true);
-        //     return;
-        // }
-
+       
         __fail(fail, true);
         if (s_ > 0 && l_ + count < s_) {
             // TODO: 折り返し分の位置を計算して, memcopy or simdで行うべき
@@ -80,7 +71,6 @@ template <class T> class RingVector {
             __fail(fail, false);
         }
 
-        // m_.unlock();
     }
 
     void write(T data, int offset, bool *fail = NULL) {
