@@ -6,6 +6,9 @@
 #include "packet_codable.hpp"
 #include "packet_definition.hpp"
 #include "serial.hpp"
+#include "shared_mem.hpp"
+#include "plotter.hpp"
+#include "pack_type.hpp"
 #include "serial_config.hpp"
 #include <thread>
 
@@ -17,12 +20,17 @@ class SerialProcess {
     unsigned char *buf_ = NULL;
     bool is_threading_ = true;
     Codable::COBSCoder *coder_ = NULL;
+    // Plotter *p_ = NULL;
+    // bool isPlotFirst_ = true;
+
     std::thread th_;
     FILE *fp_ = NULL;
     bool recording_ = false;
+    IPC::SharedMemory::Container<PlotterType, 1024> *container_;   
+    IPC::SharedMemory shm = IPC::SharedMemory("~/.shm", 51); 
     bool prev_recording_ = false;
     int index_ = 0;
-    int id_;
+    int id_;    
 
   public:
     SerialProcess(int id) : th_{[this] { __serialRoutine(); }} {
@@ -30,6 +38,7 @@ class SerialProcess {
         tmp_ = (unsigned char *)malloc(sizeof(unsigned char) * 1024);
         buf_ = (unsigned char *)malloc(sizeof(unsigned char) * 1024);
         coder_ = new Codable::COBSCoder();
+              
         init();
         SNotice("Launch SerialProcess: %d", id_);
     }
@@ -69,8 +78,8 @@ class SerialProcess {
 
     void run() {
         is_threading_ = true;
-
-        // thread_ = &process;
+        shm.get();
+       
         th_.join();
     }
 
@@ -78,15 +87,14 @@ class SerialProcess {
 
   private:
     void __loop() {
+        container_ = shm.attach<PlotterType>();
         int i;
-        int tmp_index = 0;
+        int tmp_index = 0;      
 
         int len = dev_->getRecvSize();
         if (len <= sizeof(Definition::BasePacket)) {
             return;
-        }
-
-        // SNotice("recieved %d", len);
+        }        
 
         for (i = 0; i < len; i++) {
             bool fail = false;
@@ -117,11 +125,7 @@ class SerialProcess {
             }
 
             data.decodePacket();
-
-            // SNotice("* %u %u %lu %lu %lu %lu %lu %ld", data.packet.dst,
-            // data.packet.src, data.packet.seq, data.packet.pag,
-            // data.packet.pos, data.packet.tm, data.packet.ch,
-            // data.packet.val);
+           
             if (recording_) {
                 if(fp_ != NULL){
                     fprintf(fp_, "%u %u %u %u %u %u\n",
@@ -129,6 +133,17 @@ class SerialProcess {
                             data.packet.ch, data.packet.val);
                 }
             }
+
+            if(data.packet.ch == 1){
+                PlotterType plot = {
+                    (double)data.packet.val / 4096.0,
+                    0.0, 
+                    0.0,                    
+                    (double)data.packet.tm / 100.0
+                };
+
+                container_->buf[0] = plot;
+            }        
 
             // on stop recording
             if ((prev_recording_ != recording_) && recording_ == false) {
@@ -142,6 +157,8 @@ class SerialProcess {
             SError("expected %d bytes, but size of packed.length is %d",
                    sizeof(Definition::BasePacket), tmp_index);
         }
+
+
     }
 
   public:

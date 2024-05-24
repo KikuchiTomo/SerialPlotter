@@ -15,13 +15,13 @@ CXXFLAGS  := -std=c++17 -Wno-format-security
 # LDFLAGS   := -L/opt/homebrew/lib -lfftw3 -lm
 # INC       := -Isrc -Iinclude -I/opt/homebrew/include/
 
-LDFLAGS     := -pthread `pkg-config gtkmm-3.0 --libs`
-INC         := -Iinclude -Iinclude/modules `pkg-config gtkmm-3.0 --cflags`
+LDFLAGS     := -pthread `pkg-config gtkmm-3.0 --libs` `pkg-config opencv4 --cflags` `pkg-config opencv4 --libs`
+INC         := -pthread -Iinclude -Iinclude/modules `pkg-config gtkmm-3.0 --cflags` `pkg-config opencv4 --cflags` 
 sources     := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 objects     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(subst $(SRCEXT),$(OBJEXT),$(sources)))
 dependencies := $(subst .$(OBJEXT),.$(DEPEXT),$(objects))
 
-all: directories $(TARGETDIR)/$(TARGET)
+all: directories $(TARGETDIR)/$(TARGET) plot
 
 install-mac:
 	brew install gtkmm3
@@ -33,7 +33,7 @@ remake: cleaner all
 run:
 	-mkdir outputs
 	#open ./$(TARGETDIR)/$(TARGET) 
-	./$(TARGETDIR)/$(TARGET) 
+	./$(TARGETDIR)/plotter & ./$(TARGETDIR)/$(TARGET) 
 
 directories:
 	@mkdir -p $(TARGETDIR)
@@ -50,6 +50,10 @@ cleaner: clean
 
 $(TARGETDIR)/$(TARGET): $(objects)
 	$(CXX) -o $(TARGETDIR)/$(TARGET) $^ $(LDFLAGS)
+
+# TODO: なおす
+plot:
+	$(CXX) $(CXXFLAGS) plotter/plotter.cpp -o $(TARGETDIR)/plotter -Iinclude `pkg-config opencv4 --cflags` `pkg-config opencv4 --libs` -pthread
 
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(dir $@)

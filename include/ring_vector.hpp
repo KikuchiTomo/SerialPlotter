@@ -110,12 +110,7 @@ template <class T> class RingVector {
         return tmp;
     }
 
-    T read(int offset, bool *fail = NULL) {
-        if (!m_.try_lock()) {
-            __fail(fail, true);
-            return;
-        }
-
+    T read(int offset, bool *fail = NULL) {       
         __fail(fail, true);
 
         T tmp = d_;
@@ -126,9 +121,7 @@ template <class T> class RingVector {
             tmp = b_[idx];
 
             __fail(fail, false);
-        }
-
-        m_.unlock();
+        }    
         return tmp;
     }
 
@@ -214,11 +207,7 @@ template <class T> class RingVector {
         return tmp;
     }
 
-    T readl(int offset, bool *fail = NULL) {
-        if (!m_.try_lock()) {
-            __fail(fail, true);
-            return d_;
-        }
+    T readl(int offset, bool *fail = NULL) {    
 
         __fail(fail, true);
         T tmp = d_;
@@ -229,7 +218,7 @@ template <class T> class RingVector {
             tmp = b_[idx];
             __fail(fail, false);
         }
-        m_.unlock();
+    
         return tmp;
     }
 
