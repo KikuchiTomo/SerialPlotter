@@ -26,8 +26,8 @@ class SerialProcess {
     std::thread th_;
     FILE *fp_ = NULL;
     bool recording_ = false;
-    IPC::SharedMemory::Container<PlotterType, 1024> *container_;   
-    IPC::SharedMemory shm = IPC::SharedMemory("~/.shm", 51); 
+    IPC::SharedMemory::Container<PlotterType, 1024> *container_;
+    IPC::SharedMemory *shm_;
     bool prev_recording_ = false;
     int index_ = 0;
     int id_;    
@@ -41,6 +41,8 @@ class SerialProcess {
               
         init();
         SNotice("Launch SerialProcess: %d", id_);
+
+        shm_ = new IPC::SharedMemory("~/.shm", 51); 
     }
 
     ~SerialProcess() {
@@ -78,18 +80,18 @@ class SerialProcess {
 
     void run() {
         is_threading_ = true;
-        shm.get();
-       
+        shm_->get();
+        container_ = shm_->attach<PlotterType>();
+        SNotice("Shared Mem -> Get");
         th_.join();
     }
 
     void stop() { is_threading_ = false; }
 
   private:
-    void __loop() {
-        container_ = shm.attach<PlotterType>();
+    void __loop() {               
         int i;
-        int tmp_index = 0;      
+        int tmp_index = 0;             
 
         int len = dev_->getRecvSize();
         if (len <= sizeof(Definition::BasePacket)) {

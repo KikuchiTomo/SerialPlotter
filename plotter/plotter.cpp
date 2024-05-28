@@ -21,9 +21,9 @@ int main(void) {
     
     while(1){
         auto container = containers->buf;
-        p.xrange({container[0].time - 1000, container[0].time}, {1, 3, 1});
-        p.xrange({container[0].time - 1000, container[0].time}, {1, 3, 2});
-        p.xrange({container[0].time - 1000, container[0].time}, {1, 3, 3});
+        p.xrange({container[0].time - 100, container[0].time + 100.0}, {1, 3, 1});
+        p.xrange({container[0].time - 100, container[0].time + 100.0}, {1, 3, 2});
+        p.xrange({container[0].time - 100, container[0].time + 100.0}, {1, 3, 3});
 
         p.addData({1, 3, 1}, container[0].time, container[0].x);
         p.addData({1, 3, 2}, container[0].time, container[0].y);
