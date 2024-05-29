@@ -33,7 +33,7 @@ remake: cleaner all
 run:
 	-mkdir outputs
 	#open ./$(TARGETDIR)/$(TARGET) 
-	./$(TARGETDIR)/plotter & ./$(TARGETDIR)/$(TARGET) 
+	./$(TARGETDIR)/$(TARGET) 
 
 directories:
 	@mkdir -p $(TARGETDIR)

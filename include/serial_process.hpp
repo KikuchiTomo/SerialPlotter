@@ -42,7 +42,7 @@ class SerialProcess {
         init();
         SNotice("Launch SerialProcess: %d", id_);
 
-        shm_ = new IPC::SharedMemory("~/.shm", 51); 
+        // shm_ = new IPC::SharedMemory("~/.shm", 51); 
     }
 
     ~SerialProcess() {
@@ -80,8 +80,8 @@ class SerialProcess {
 
     void run() {
         is_threading_ = true;
-        shm_->get();
-        container_ = shm_->attach<PlotterType>();
+        // shm_->get();
+        // container_ = shm_->attach<PlotterType>();
         SNotice("Shared Mem -> Get");
         th_.join();
     }
@@ -136,16 +136,16 @@ class SerialProcess {
                 }
             }
 
-            if(data.packet.ch == 1){
-                PlotterType plot = {
-                    (double)data.packet.val / 4096.0,
-                    0.0, 
-                    0.0,                    
-                    (double)data.packet.tm / 100.0
-                };
+            // if(data.packet.ch == 1){
+            //     PlotterType plot = {
+            //         (double)data.packet.val / 4096.0,
+            //         0.0, 
+            //         0.0,                    
+            //         (double)data.packet.tm / 100.0
+            //     };
 
-                container_->buf[0] = plot;
-            }        
+            //     container_->buf[0] = plot;
+            // }        
 
             // on stop recording
             if ((prev_recording_ != recording_) && recording_ == false) {
