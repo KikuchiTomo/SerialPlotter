@@ -21,7 +21,7 @@ int main(void) {
     // p.addSubplot({2, 1, 2});  
 
     // 3x1とか
-   p.addSubplot({1, 3, 1});
+    p.addSubplot({1, 3, 1});
     p.addSubplot({1, 3, 2}); 
     p.addSubplot({1, 3, 3}); 
 

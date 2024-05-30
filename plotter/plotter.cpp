@@ -17,7 +17,9 @@ int main(void) {
     p.addSubplot({1, 3, 2}); 
     p.addSubplot({1, 3, 3}); 
 
+    p.xtics(100.0, {1, 3, 1}); 
     p.xtics(100.0, {1, 3, 2});   
+    p.xtics(100.0, {1, 3, 3}); 
     
     while(1){
         auto container = containers->buf;

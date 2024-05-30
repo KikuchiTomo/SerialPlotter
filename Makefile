@@ -42,6 +42,9 @@ directories:
 clean:
 	@$(RM) -rf $(TARGETDIR)
 	@$(RM) -rf $(BUILDDIR)	
+	@$(RM) -rf test/cbos/test_cobs
+	@$(RM) -rf test/plotter/test_plotter.
+
 
 cleaner: clean
 	@$(RM) -rf $(TARGETDIR)

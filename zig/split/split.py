@@ -4,6 +4,9 @@ import data0
 import data1
 import pickle as pk
 
+## memo
+## python3 split.py ../../outputs/1-data-240528-170429.csv ~/kPressOutput bin
+
 def firstIndex(timeline, timestamp):
     for i in range(len(timeline)-1):
         s = timeline[i]

@@ -6,7 +6,6 @@ from datetime import datetime as dt
 from scipy import signal
 
 def butterLowpass(lowcut, fs, order=4):
-
     nyq = 0.5 * fs
     low = lowcut / nyq
     b, a = signal.butter(order, low, btype='low')
@@ -84,7 +83,7 @@ def load(fpath):
     v1 = v1 - a1
     v2 = v2
 
-    fc = 15.0
+    fc = 8.0
     v0 = lowpass(v0, fc, calcSamplingRate(t0))
     v1 = lowpass(v1, fc, calcSamplingRate(t1))
     v2 = lowpass(v2, fc, calcSamplingRate(t2))
