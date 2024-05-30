@@ -264,7 +264,7 @@ class Plotter {
     void addSubplot(FigurePos pos, int max_width_sample = 4096) {
         RingVector<Point2D> *buf =
             new RingVector<Point2D>(max_width_sample, {0.0, 0.0});
-        Range2D xrange = {-10, 2048};
+        Range2D xrange = {0.0, 20.0};
         Range2D yrange = {-1.0, 1.0};
 
         Plot info = {buf,   xrange, yrange, "xlabel", "ylabel",

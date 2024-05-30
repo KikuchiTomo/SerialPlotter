@@ -17,12 +17,39 @@ namespace IPC {
 class SharedMemory {
     public:
      template <typename T, int N> struct container {
-        T buf[N];
+        T buf[N];          
+        bool wrote[N];
         const long long int len = N;
-        pthread_mutex_t mutex;
-    };
+     };
 
     template <typename T, int N> using Container = struct container<T, N>;
+
+    template <typename T, int N = 1024> void init(Container<T, N> *container){
+        for (int i = 0; i < N; i++){                           
+            container->wrote[i] = false;            
+        } 
+    }
+
+    template <typename T, int N = 1024> T read(Container<T, N> *container){
+        for (int i = 0; i < N; i++){
+            if(container->wrote[i] == true){
+                // printf("read  %d\n", i);
+                container->wrote[i] = false;               
+                return container->buf[i];
+            }
+        } 
+    }
+
+    template <typename T, int N = 1024> void write(Container<T, N> *container, T item){
+        for (int i = 0; i < N; i++){
+            if(container->wrote[i] == false){
+                container->buf[i] = item;
+                // printf("write %d\n", i);
+                container->wrote[i] = true;
+                return;
+            }
+        } 
+    }
 
   private:
     key_t key_;
@@ -31,10 +58,12 @@ class SharedMemory {
 
   public:
     SharedMemory(std::string key, int id) {
-        FILE *fp = fopen(key.c_str(), "a");
+        FILE *fp = fopen(key.c_str(), "w");
         fclose(fp);
 
         key_ = ftok(key.c_str(), id);
+
+        printf("SharedMem KEY: %d\n", key_);
         if (key_ == -1) {
             // TODO: error handling
         }
@@ -45,6 +74,7 @@ class SharedMemory {
     template <typename T, int N = 1024> bool create() {
         int size = sizeof(Container<T, N>);
         seg_id_ = shmget(key_, size, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
+        printf("SharedMem ID: %d\n", seg_id_);
         if (seg_id_ == -1) {
             return false;
         }
@@ -54,6 +84,7 @@ class SharedMemory {
 
     bool get() {
         seg_id_ = shmget(key_, 0, 0);
+        printf("SharedMem ID: %d\n", seg_id_);
         if (seg_id_ == -1) {
             return false;
         }

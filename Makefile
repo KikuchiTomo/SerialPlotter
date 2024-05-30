@@ -35,6 +35,9 @@ run:
 	#open ./$(TARGETDIR)/$(TARGET) 
 	./$(TARGETDIR)/$(TARGET) 
 
+run-with-plot: 
+	-mkdir outputs
+	./$(TARGETDIR)/plotter & ./$(TARGETDIR)/$(TARGET) 
 directories:
 	@mkdir -p $(TARGETDIR)
 	@mkdir -p $(BUILDDIR)
@@ -44,7 +47,6 @@ clean:
 	@$(RM) -rf $(BUILDDIR)	
 	@$(RM) -rf test/cbos/test_cobs
 	@$(RM) -rf test/plotter/test_plotter.
-
 
 cleaner: clean
 	@$(RM) -rf $(TARGETDIR)
@@ -57,6 +59,10 @@ $(TARGETDIR)/$(TARGET): $(objects)
 # TODO: なおす
 plot:
 	$(CXX) $(CXXFLAGS) plotter/plotter.cpp -o $(TARGETDIR)/plotter -Iinclude `pkg-config opencv4 --cflags` `pkg-config opencv4 --libs` -pthread
+	$(CXX)  $(CXXFLAGS) plotter/stream_mock.cpp -o $(TARGETDIR)/stream_mock -Iinclude `pkg-config opencv4 --cflags` `pkg-config opencv4 --libs` -pthread
+
+plotmock:
+	./$(TARGETDIR)/plotter & ./$(TARGETDIR)/stream_mock
 
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(dir $@)

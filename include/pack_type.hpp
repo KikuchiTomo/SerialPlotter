@@ -5,6 +5,9 @@ typedef struct plotter_type{
     double x;
     double y;
     double z;
+    bool wx;
+    bool wy;
+    bool wz;
     double time;
 } PlotterType;
 
